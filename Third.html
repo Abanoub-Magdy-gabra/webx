@@ -1,1 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loop Example</title>
+</head>
+<body>
 
+<p id="demo"></p>
+
+<script>
+    let text = "";
+
+    for (let i = 1; i <= 5; i++) {
+        text += "The number is " + i + "<br>";
+    }
+
+    document.getElementById("demo").innerHTML = text;
+</script>
+
+</body>
+</html>
