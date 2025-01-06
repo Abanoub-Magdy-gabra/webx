@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey KPI Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      max-width: 400px;
+      width: 90%;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #e9ffe6;
+      color: #2d7a2e;
+      border: 1px solid #2d7a2e;
+      border-radius: 4px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Survey KPI Calculator</h1>
+    <form id="survey-form">
+      <label for="target-percentage">Target Percentage (%):</label>
+      <input type="number" id="target-percentage" step="any" placeholder="Enter target percentage" required>
+
+      <label for="total-surveys">Total Surveys:</label>
+      <input type="number" id="total-surveys" step="1" placeholder="Enter total number of surveys" required>
+
+      <label for="completed-surveys">Surveys Conducted So Far:</label>
+      <input type="number" id="completed-surveys" step="1" placeholder="Enter surveys conducted so far" required>
+
+      <button type="button" onclick="calculateSurveys()">Calculate</button>
+    </form>
+    <div id="result" class="result" style="display: none;"></div>
+  </div>
+
+  <script>
+    function calculateSurveys() {
+      const targetPercentage = parseFloat(document.getElementById('target-percentage').value);
+      const totalSurveys = parseInt(document.getElementById('total-surveys').value, 10);
+      const completedSurveys = parseInt(document.getElementById('completed-surveys').value, 10);
+
+      if (isNaN(targetPercentage) || isNaN(totalSurveys) || isNaN(completedSurveys)) {
+        alert('Please enter valid numbers in all fields.');
+        return;
+      }
+
+      if (targetPercentage <= 0 || targetPercentage > 100) {
+        alert('Target percentage must be between 1 and 100.');
+        return;
+      }
+
+      if (completedSurveys > totalSurveys) {
+        alert('Surveys conducted cannot exceed total surveys.');
+        return;
+      }
+
+      // Calculate total and additional surveys needed
+      const totalSurveysNeeded = (targetPercentage / 100) * totalSurveys;
+      const additionalSurveysNeeded = Math.max(0, totalSurveysNeeded - completedSurveys);
+
+      const resultDiv = document.getElementById('result');
+      if (additionalSurveysNeeded === 0) {
+        resultDiv.textContent = "Congratulations! You've already met the target.";
+        resultDiv.style.background = "#e0f7fa";
+        resultDiv.style.color = "#006064";
+      } else {
+        resultDiv.textContent = `You need ${additionalSurveysNeeded.toFixed(0)} more surveys to reach your target.`;
+        resultDiv.style.background = "#e9ffe6";
+        resultDiv.style.color = "#2d7a2e";
+      }
+
+      resultDiv.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
