@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced CSAT Calculator by Abanoub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .branding {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        }
+
+        .unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #38bdf8, #3b82f6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .results {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .indicator span {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .chart-container canvas {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="branding">
+            <div class="logo">ABANOUB DEVELOPER</div>
+            <h1>CSAT Calculator</h1>
+            <div class="subtitle">Monitor your customer satisfaction with ease.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="target-csat">Target CSAT Score</label>
+            <div class="input-wrapper">
+                <input id="target-csat" type="number" placeholder="Enter target score (0-100)" min="0" max="100">
+                <span class="unit">%</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="current-surveys">Current Survey Responses</label>
+            <input id="current-surveys" type="number" placeholder="Enter total responses" min="0">
+        </div>
+        <div class="form-group">
+            <label for="satisfied-customers">Satisfied Customers</label>
+            <input id="satisfied-customers" type="number" placeholder="Enter satisfied customers" min="0">
+        </div>
+
+        <button onclick="calculateCSAT()">Calculate</button>
+
+        <div class="results" id="results">
+            <div class="indicator">
+                <span>Current CSAT:</span>
+                <span id="current-csat">0%</span>
+            </div>
+            <div class="indicator">
+                <span>Additional Surveys Needed:</span>
+                <span id="surveys-needed">0</span>
+            </div>
+            <div class="indicator">
+                <span>Total Future Surveys:</span>
+                <span id="total-future-surveys">0</span>
+            </div>
+            <div class="indicator">
+                <span>Satisfied Responses Needed:</span>
+                <span id="satisfied-needed">0</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="csat-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function calculateCSAT() {
+            const targetCSAT = parseFloat(document.getElementById('target-csat').value);
+            const currentSurveys = parseInt(document.getElementById('current-surveys').value);
+            const satisfiedCustomers = parseInt(document.getElementById('satisfied-customers').value);
+
+            // Validate inputs
+            if (isNaN(targetCSAT) || isNaN(currentSurveys) || isNaN(satisfiedCustomers) || 
+                targetCSAT <= 0 || targetCSAT > 100 || satisfiedCustomers > currentSurveys) {
+                alert("Please provide valid inputs.");
+                return;
+            }
+
+            const currentCSAT = ((satisfiedCustomers / currentSurveys) * 100).toFixed(1);
+            
+            // Calculate additional surveys needed
+            let additionalSurveysNeeded = 0;
+            let satisfiedResponsesNeeded = 0;
+            
+            if (currentCSAT < targetCSAT) {
+                // Calculate how many more satisfied responses needed to reach target
+                additionalSurveysNeeded = Math.ceil((targetCSAT * currentSurveys - (satisfiedCustomers * 100)) / (100 - targetCSAT));
+                
+                // Calculate total satisfied responses needed
+                const totalFutureSurveys = currentSurveys + additionalSurveysNeeded;
+                satisfiedResponsesNeeded = Math.ceil((targetCSAT / 100) * totalFutureSurveys) - satisfiedCustomers;
+            }
+
+            // Update UI
+            document.getElementById('current-csat').textContent = `${currentCSAT}%`;
+            document.getElementById('surveys-needed').textContent = additionalSurveysNeeded;
+            document.getElementById('total-future-surveys').textContent = currentSurveys + additionalSurveysNeeded;
+            document.getElementById('satisfied-needed').textContent = satisfiedResponsesNeeded;
+
+            // Show results
+            document.getElementById('results').style.display = 'block';
+
+            // Update chart
+            updateChart([currentCSAT, targetCSAT]);
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('csat-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Current CSAT', 'Target CSAT'],
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#60a5fa', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
