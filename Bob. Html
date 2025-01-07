@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced CSAT Calculator by Abanoub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .branding {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #38bdf8;
+            position: relative;
+            display: inline-block;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, #fff, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        label {
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #38bdf8;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+            outline: none;
+        }
+
+        .unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #38bdf8, #3b82f6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: 0.5s;
+        }
+
+        button:hover::after {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .results {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #38bdf8;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @media (max-width: 600px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="branding">
+            <div class="logo">ABANOUB DEVELOPER</div>
+            <h1>CSAT Calculator</h1>
+            <div class="subtitle">Advanced customer satisfaction analytics</div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="target-csat">Target CSAT Score</label>
+                <div class="input-wrapper">
+                    <input id="target-csat" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="current-surveys">Current Survey Responses</label>
+                <input id="current-surveys" type="number" placeholder="Enter total responses" min="0">
+            </div>
+            <div class="form-group">
+                <label for="satisfied-customers">Satisfied Customers</label>
+                <input id="satisfied-customers" type="number" placeholder="Enter satisfied customers" min="0">
+            </div>
+        </div>
+
+        <button onclick="calculateCSAT()">Calculate CSAT Metrics</button>
+
+        <div class="results" id="results">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Current CSAT</div>
+                    <div class="metric-value" id="current-csat">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Additional Surveys Needed</div>
+                    <div class="metric-value" id="surveys-needed">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Total Future Surveys</div>
+                    <div class="metric-value" id="total-future-surveys">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Satisfied Responses Needed</div>
+                    <div class="metric-value" id="satisfied-needed">0</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <div class="chart-title">CSAT Comparison</div>
+                    <canvas id="csat-chart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Progress Towards Target</div>
+                    <canvas id="progress-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let csatChart;
+        let progressChart;
+
+        function calculateCSAT() {
+            const targetCSAT = parseFloat(document.getElementById('target-csat').value);
+            const currentSurveys = parseInt(document.getElementById('current-surveys').value);
+            const satisfiedCustomers = parseInt(document.getElementById('satisfied-customers').value);
+
+            if (isNaN(targetCSAT) || isNaN(currentSurveys) || isNaN(satisfiedCustomers) ||
+                targetCSAT <= 0 || targetCSAT > 100 || satisfiedCustomers > currentSurveys || currentSurveys === 0) {
+                alert("Please provide valid inputs.");
+                return;
+            }
+
+            const currentCSAT = ((satisfiedCustomers / currentSurveys) * 100).toFixed(1);
+
+            let additionalSurveysNeeded = 0;
+            let satisfiedResponsesNeeded = 0;
+
+            if (currentCSAT < targetCSAT) {
+                additionalSurveysNeeded = Math.ceil((targetCSAT * currentSurveys - (satisfiedCustomers * 100)) / (100 - targetCSAT));
+                const totalFutureSurveys = currentSurveys + additionalSurveysNeeded;
+                satisfiedResponsesNeeded = Math.ceil((targetCSAT / 100) * totalFutureSurveys) - satisfiedCustomers;
+            }
+
+            // Update metrics with animation
+            animateValue('current-csat', currentCSAT + '%');
+            animateValue('surveys-needed', additionalSurveysNeeded);
+            animateValue('total-future-surveys', currentSurveys + additionalSurveysNeeded);
+            animateValue('satisfied-needed', satisfiedResponsesNeeded);
+
+            // Show results with animation
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.classList.add('fade-in');
+
+            updateCharts(currentCSAT, targetCSAT, satisfiedCustomers, currentSurveys);
+        }
+
+        function animateValue(elementId, endValue) {
+            const element = document.getElementById(elementId);
+            const start = parseInt(element.innerHTML) || 0;
+            const end = parseInt(endValue) || 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const value = Math.floor(start + (end - start) * progress);
+                element.innerHTML = elementId.includes('csat') ? value + '%' : value;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function updateCharts(currentCSAT, targetCSAT, satisfiedCustomers, totalSurveys) {
+            // Update CSAT Comparison Chart
+            const csatCtx = document.getElementById('csat-chart').getContext('2d');
+            if (csatChart) csatChart.destroy();
+
+            csatChart = new Chart(csatCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Current CSAT', 'Gap to Target'],
+                    datasets: [{
+                        data: [currentCSAT, Math.max(0, targetCSAT - currentCSAT)],
+                        backgroundColor: ['#38bdf8', 'rgba(255, 255, 255, 0.1)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update Progress Chart
+            const progressCtx = document.getElementById('progress-chart').getContext('2d');
+            if (progressChart) progressChart.destroy();
+
+            progressChart = new Chart(progressCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Responses'],
+                    datasets: [
+                        {
+                            label: 'Satisfied',
+                            data: [satisfiedCustomers],
+                            backgroundColor: '#38bdf8'
+                        },
+                        {
+                            label: 'Unsatisfied',
+                            data: [totalSurveys - satisfiedCustomers],
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#fff'
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
