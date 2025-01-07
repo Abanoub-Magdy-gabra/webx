@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Survey KPI Calculator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #007bff, #00d4ff);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 1000px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .input-section {
+      padding-right: 20px;
+    }
+
+    .visualization-section {
+      border-left: 1px solid #eee;
+      padding-left: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .visualization-section {
+        border-left: none;
+        border-top: 1px solid #eee;
+        padding-left: 0;
+        padding-top: 20px;
+      }
+      
+      .input-section {
+        padding-right: 0;
+      }
+    }
+
+    h1 {
+      font-size: 1.8em;
+      color: #007bff;
+      margin-bottom: 20px;
+      text-align: center;
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px 20px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+    }
+
+    .progress-container {
+      margin: 20px 0;
+      background: #f0f0f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 20px;
+      background: #007bff;
+      width: 0;
+      transition: width 0.5s ease;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .result.success {
+      background: #e6ffed;
+      color: #28a745;
+      border: 1px solid #28a745;
+    }
+
+    .result.error {
+      background: #ffe6e6;
+      color: #dc3545;
+      border: 1px solid #dc3545;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .metric-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .metric-label {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    #chartContainer {
+      margin-top: 20px;
+      height: 300px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Survey KPI Calculator</h1>
+    
+    <div class="input-section">
+      <div class="form-group">
+        <label for="target-percentage">Target KPI (%):</label>
+        <input type="number" id="target-percentage" step="any" placeholder="Enter target KPI percentage" required>
+      </div>
+
+      <div class="form-group">
+        <label for="total-surveys">Total Surveys:</label>
+        <input type="number" id="total-surveys" step="1" placeholder="Enter total surveys" required>
+      </div>
+
+      <div class="form-group">
+        <label for="completed-surveys">Surveys Conducted So Far:</label>
+        <input type="number" id="completed-surveys" step="1" placeholder="Enter completed surveys" required>
+      </div>
+
+      <button onclick="calculateSurveys()">Calculate</button>
+      <div id="result" class="result"></div>
+    </div>
+
+    <div class="visualization-section">
+      <div class="progress-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      
+      <div class="metrics">
+        <div class="metric-card">
+          <div id="current-percentage" class="metric-value">0%</div>
+          <div class="metric-label">Current Progress</div>
+        </div>
+        <div class="metric-card">
+          <div id="remaining-percentage" class="metric-value">0%</div>
+          <div class="metric-label">Remaining</div>
+        </div>
+      </div>
+
+      <div id="chartContainer">
+        <canvas id="surveyChart"></canvas>
+      </div>
+    </div>
+
+    <footer>
+      Developed by <a href="#">Abanoub</a>
+    </footer>
+  </div>
+
+  <script>
+    let chart = null;
+
+    function calculateSurveys() {
+      const targetPercentage = parseFloat(document.getElementById('target-percentage').value);
+      const totalSurveys = parseInt(document.getElementById('total-surveys').value, 10);
+      const completedSurveys = parseInt(document.getElementById('completed-surveys').value, 10);
+
+      const resultDiv = document.getElementById('result');
+      const progressBar = document.getElementById('progress-bar');
+      
+      // Reset result display
+      resultDiv.style.display = 'none';
+      resultDiv.className = 'result';
+
+      // Validation checks
+      if (isNaN(targetPercentage) || isNaN(totalSurveys) || isNaN(completedSurveys)) {
+        showError('Please enter valid numbers in all fields.');
+        return;
+      }
+
+      if (targetPercentage <= 0 || targetPercentage > 100) {
+        showError('Target KPI must be between 1 and 100.');
+        return;
+      }
+
+      if (completedSurveys > totalSurveys) {
+        showError('Surveys conducted cannot exceed total surveys.');
+        return;
+      }
+
+      // Calculate metrics
+      const currentPercentage = (completedSurveys / totalSurveys) * 100;
+      const totalSurveysNeeded = Math.ceil((targetPercentage / 100) * totalSurveys);
+      const additionalSurveysNeeded = Math.max(0, totalSurveysNeeded - completedSurveys);
+      const progressPercentage = Math.min(100, (currentPercentage / targetPercentage) * 100);
+      const remainingPercentage = Math.max(0, targetPercentage - currentPercentage);
+
+      // Update progress bar and metrics
+      progressBar.style.width = `${progressPercentage}%`;
+      document.getElementById('current-percentage').textContent = `${currentPercentage.toFixed(1)}%`;
+      document.getElementById('remaining-percentage').textContent = `${remainingPercentage.toFixed(1)}%`;
+
+      // Display result
+      if (additionalSurveysNeeded === 0) {
+        showSuccess("Congratulations! You've already met the target KPI.");
+      } else {
+        showSuccess(`You need ${additionalSurveysNeeded} more surveys to reach your target KPI.`);
+      }
+
+      // Update chart
+      updateChart(completedSurveys, totalSurveysNeeded, totalSurveys);
+    }
+
+    function showError(message) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = message;
+      resultDiv.className = 'result error';
+      resultDiv.style.display = 'block';
+    }
+
+    function showSuccess(message) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = message;
+      resultDiv.className = 'result success';
+      resultDiv.style.display = 'block';
+    }
+
+    function updateChart(current, target, total) {
+      const ctx = document.getElementById('surveyChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (chart) {
+        chart.destroy();
+      }
+
+      // Generate projection data
+      const projectionData = [];
+      const labels = [];
+      const intervals = 5;
+      const step = (target - current) / intervals;
+
+      for (let i = 0; i <= intervals; i++) {
+        const surveys = Math.min(total, Math.round(current + (step * i)));
+        projectionData.push((surveys / total) * 100);
+        labels.push(`Point ${i}`);
+      }
+
+      // Create new chart
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Projected Progress (%)',
+            data: projectionData,
+            borderColor: '#007bff',
+            tension: 0.4,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: 'Completion Percentage'
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
