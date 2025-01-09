@@ -1,0 +1,119 @@
+To calculate how many additional surveys are needed to achieve the target rate (CSAT, NPS, or similar) and incorporate them into the total for projection, here's an updated approach:
+
+
+---
+
+Updated Calculation Logic
+
+The formula to calculate the additional positive surveys required to reach the target rate:
+
+\text{Additional Positive Surveys} = \frac{\text{Target Rate} \times (\text{Total Feedbacks} + x) - \text{Positive Feedbacks}}{1 - \text{Target Rate}}
+
+ is the total additional surveys (positive + negative).
+
+Rearrange the formula to find , the additional surveys needed.
+
+
+
+---
+
+Updated CSAT Widget
+
+<!-- CSAT Widget -->
+<div class="widget">
+    <div class="widget-header">
+        <div class="widget-title">
+            <i class="fas fa-smile"></i>
+            Customer Satisfaction
+        </div>
+    </div>
+
+    <div id="csat-inputs" class="metric-input-container">
+        <div class="metric-input-group">
+            <label>Total Feedbacks:</label>
+            <input type="number" class="metric-input" id="csat-total" min="0">
+        </div>
+        <div class="metric-input-group">
+            <label>Positive Feedbacks:</label>
+            <input type="number" class="metric-input" id="csat-positive" min="0">
+        </div>
+        <div class="metric-input-group">
+            <label>Target CSAT (%)</label>
+            <input type="number" class="metric-input" id="csat-target" min="0" max="100" step="0.1">
+        </div>
+        <button class="widget-button" onclick="calculateSurveysNeeded()">Calculate</button>
+    </div>
+
+    <div class="metric-list">
+        <div class="metric-item">
+            <div class="metric-value">
+                <i class="fas fa-chart-bar"></i>
+                <span id="current-csat">--</span>
+            </div>
+            <div class="metric-label">Current CSAT</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-value">
+                <i class="fas fa-arrow-circle-up"></i>
+                <span id="additional-surveys">--</span>
+            </div>
+            <div class="metric-label">Additional Surveys Needed</div>
+        </div>
+        <div class="metric-item">
+            <div class="metric-value">
+                <i class="fas fa-chart-line"></i>
+                <span id="projected-csat">--</span>
+            </div>
+            <div class="metric-label">Projected CSAT</div>
+        </div>
+    </div>
+</div>
+
+
+---
+
+JavaScript Logic
+
+function calculateSurveysNeeded() {
+    const totalFeedbacks = parseFloat(document.getElementById('csat-total').value);
+    const positiveFeedbacks = parseFloat(document.getElementById('csat-positive').value);
+    const targetCSAT = parseFloat(document.getElementById('csat-target').value) / 100;
+
+    if (isNaN(totalFeedbacks) || isNaN(positiveFeedbacks) || isNaN(targetCSAT)) {
+        alert("Please enter valid values.");
+        return;
+    }
+
+    const currentCSAT = positiveFeedbacks / totalFeedbacks;
+    const numerator = targetCSAT * totalFeedbacks - positiveFeedbacks;
+    const denominator = 1 - targetCSAT;
+
+    // Calculate additional surveys
+    const additionalSurveys = Math.ceil(numerator / denominator);
+
+    // Calculate projected CSAT
+    const projectedTotal = totalFeedbacks + additionalSurveys;
+    const projectedPositive = positiveFeedbacks + additionalSurveys;
+    const projectedCSAT = (projectedPositive / projectedTotal) * 100;
+
+    // Update UI
+    document.getElementById('current-csat').textContent = (currentCSAT * 100).toFixed(1) + '%';
+    document.getElementById('additional-surveys').textContent = additionalSurveys > 0 ? additionalSurveys : '0';
+    document.getElementById('projected-csat').textContent = projectedCSAT.toFixed(1) + '%';
+}
+
+
+---
+Cc
+Key Features:
+
+1. Dynamic Feedback Projection:
+
+Calculate how many additional surveys (both positive and total) are needed to achieve the target rate.
+
+
+
+2. Projected CSAT:
+
+
+
