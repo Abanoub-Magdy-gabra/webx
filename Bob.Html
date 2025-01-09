@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Survey Metrics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #6366f1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --neutral: #64748b;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .dashboard-summary {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .widget {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .widget-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .widget-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .widget-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .metric-form {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.75rem;
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value.positive { color: var(--success); }
+        .metric-value.neutral { color: var(--primary); }
+        .metric-value.negative { color: var(--danger); }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .trend-indicator.positive {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .trend-indicator.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .chart-container {
+            height: 300px;
+            margin-top: 1.5rem;
+            position: relative;
+        }
+
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+        
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                SURVEY METRICS DASHBOARD
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Summary Section -->
+        <div class="dashboard-summary">
+            <div class="summary-item">
+                <div class="summary-value" id="total-surveys">0</div>
+                <div class="summary-label">Total Surveys Sent</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="total-responses">0</div>
+                <div class="summary-label">Total Responses</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="total-satisfaction">0%</div>
+                <div class="summary-label">Overall Satisfaction</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="total-retention">0%</div>
+                <div class="summary-label">Overall Retention</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Survey Metrics Widget -->
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-poll"></i>
+                        Survey Metrics
+                    </div>
+                    <div class="widget-actions">
+                        <button class="widget-button" onclick="toggleForm('survey-form')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="widget-button" onclick="exportData('survey')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="survey-form" class="metric-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Surveys Sent</label>
+                            <input type="number" id="surveys-sent" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Responses Received</label>
+                            <input type="number" id="responses-received" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>CSAT Responses</label>
+                            <input type="number" id="csat-responses" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>DSAT Responses</label>
+                            <input type="number" id="dsat-responses" class="form-input" min="0">
+                        </div>
+                    </div>
+                    <button class="widget-button" onclick="updateSurveyMetrics()">Update Metrics</button>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value neutral" id="response-rate">0%</div>
+                        <div class="metric-label">Response Rate</div>
+                        <div class="trend-indicator" id="response-trend"></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value positive" id="csat-rate">0%</div>
+                        <div class="metric-label">CSAT Rate</div>
+                        <div class="trend-indicator" id="csat-trend"></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value negative" id="dsat-rate">0%</div>
+                        <div class="metric-label">DSAT Rate</div>
+                        <div class="trend-indicator" id="dsat-trend"></div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="survey-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Retention Metrics Widget -->
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-users"></i>
+                        Retention Metrics
+                    </div>
+                    <div class="widget-actions">
+                        <button class="widget-button" onclick="toggleForm('retention-form')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="widget-button" onclick="exportData('retention')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="retention-form" class="metric-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Total Customers</label>
+                            <input type="number" id="total-customers" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Retained Customers</label>
+                            <input type="number" id="retained-customers" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Future Customers</label>
+                            <input type="number" id="future-customers" class="form-input" min="0">
+                        </div>
+                    </div>
+                    <button class="widget-button" onclick="updateRetentionMetrics()">Update Metrics</button>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value neutral" id="current-retention">0%</div>
+                        <div class="metric-label">Current Retention</div>
+                        <div class="trend-indicator" id="retention-trend"></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value positive" id="projected-retention">0%</div>
+                        <div class="metric-label">Projected Retention</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value neutral" id="growth-rate">0%</div>
+                        <div class="metric-label">Growth Rate</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="retention-chart"></canvas>
+                </div>
+            </div>
+        </div><!-- Add this HTML section right after the last widget in the dashboard-grid div -->
+<div class="widget">
+    <div class="widget-header">
+        <div class="widget-title">
+            <i class="fas fa-calculator"></i>
+            Metrics Calculator
+        </div>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="form-group">
+            <label>Target CSAT %</label>
+            <input type="number" id="target-csat" class="form-input" value="85" min="0" max="100">
+        </div>
+        <div class="form-group">
+            <label>Current Total Responses</label>
+            <input type="number" id="current-total" class="form-input" value="1000" min="0">
+        </div>
+        <div class="form-group">
+            <label>Target Retention %</label>
+            <input type="number" id="target-retention" class="form-input" value="90" min="0" max="100">
+        </div>
+        <div class="form-group">
+            <label>Current DSAT Responses</label>
+            <input type="number" id="current-dsat" class="form-input" value="50" min="0">
+        </div>
+    </div>
+
+    <div class="metric-results" style="margin-top: 1.5rem;">
+        <div class="metrics-grid">
+            <div class="metric-item">
+                <div class="metric-value neutral" id="required-csat">0</div>
+                <div class="metric-label">Required Additional CSAT</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value positive" id="safety-surveys">0</div>
+                <div class="metric-label">Safety Surveys Needed</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value neutral" id="retention-target">0</div>
+                <div class="metric-label">Retention Target</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value positive" id="additional-retention">0</div>
+                <div class="metric-label">Additional Retention Needed</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // State management
+        const state = {
+            surveys: {
+                sent: [],
+                responses: [],
+                csat: [],
+                dsat: [],
+                dates: []
+            },
+            retention: {
+                total: [],
+                retained: [],
+                projected: [],
+                dates: []
+            }
+        };
+
+        // Chart instances
+        let surveyChart, retentionChart;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadSavedData();
+        });
+
+        // Toggle form visibility
+        function toggleForm(formId) {
+            const form = document.getElementById(formId);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Update survey metrics
+        function updateSurveyMetrics() {
+            const surveysSent = parseInt(document.getElementById('surveys-sent').value) || 0;
+            const responsesReceived = parseInt(document.getElementById('responses-received').value) || 0;
+            const csatResponses = parseInt(document.getElementById('csat-responses').value) || 0;
+            const dsatResponses = parseInt(document.getElementById('dsat-responses').value) || 0;
+
+            // Validate inputs
+            if (responsesReceived > surveysSent) {
+                alert('Responses cannot exceed surveys sent');
+                return;
+            }
+            if (csatResponses + dsatResponses > responsesReceived) {
+                alert('CSAT + DSAT responses cannot exceed total responses');
+                return;
+            }
+
+            // Update state
+            const date = new Date().toISOString().split('T')[0];
+            state.surveys.dates.push(date);
+            state.surveys.sent.push(surveysSent);
+            state.surveys.responses.push(responsesReceived);
+            state.surveys.csat.push(csatResponses);
+            state.surveys.dsat.push(dsatResponses);
+
+            // Calculate rates
+            const responseRate = (responsesReceived / surveysSent * 100).toFixed(1);
+            const csatRate = (csatResponses / responsesReceived * 100).toFixed(1);
+            const dsatRate = (dsatResponses / responsesReceived * 100).toFixed(1);
+
+            // Update UI
+            document.getElementById('response-rate').textContent = responseRate + '%';
+            document.getElementById('csat-rate').textContent = csatRate + '%';
+            document.getElementById('dsat-rate').textContent = dsatRate + '%';
+
+            // Update trends
+            updateTrend('response', responseRate);
+            updateTrend('csat', csatRate);
+            updateTrend('dsat', dsatRate);
+
+            // Update summary
+            updateSummary();
+
+            // Update chart
+            updateSurveyChart();
+
+            // Save data
+            saveData();
+
+            // Clear form
+            document.getElementById('survey-form').style.display = 'none';
+        }
+
+        // Update retention metrics
+        function updateRetentionMetrics() {
+            const totalCustomers = parseInt(document.getElementById('total-customers').value) || 0;
+            const retainedCustomers = parseInt(document.getElementById('retained-customers').value) || 0;
+            const futureCustomers = parseInt(document.getElementById('future-customers').value) || 0;
+
+            // Validate inputs
+            if (retainedCustomers > totalCustomers) {
+                alert('Retained customers cannot exceed total customers');
+                return;
+            }
+
+            // Update state
+            const date = new Date().toISOString().split('T')[0];
+            state.retention.dates.push(date);
+            state.retention.total.push(totalCustomers);
+            state.retention.retained.push(retainedCustomers);
+            state.retention.projected.push(futureCustomers);
+
+            // Calculate rates
+            const retentionRate = (retainedCustomers / totalCustomers * 100).toFixed(1);
+            const projectedRate = (futureCustomers / totalCustomers * 100).toFixed(1);
+            const growthRate = ((futureCustomers - totalCustomers) / totalCustomers * 100).toFixed(1);
+
+            // Update UI
+            document.getElementById('current-retention').textContent = retentionRate + '%';
+            document.getElementById('projected-retention').textContent = projectedRate + '%';
+            document.getElementById('growth-rate').textContent = growthRate + '%';
+
+            // Update trend
+            updateTrend('retention', retentionRate);
+
+            // Update summary
+            updateSummary();
+
+            // Update chart
+            updateRetentionChart();
+
+            // Save data
+            saveData();
+
+            // Clear form
+            document.getElementById('retention-form').style.display = 'none';
+        }
+
+        // Update trend indicators
+        function updateTrend(metric, currentValue) {
+            const trend = document.getElementById(`${metric}-trend`);
+            const previousValue = getPreviousValue(metric);
+            const diff = (currentValue - previousValue).toFixed(1);
+            
+            trend.className = 'trend-indicator ' + (diff >= 0 ? 'positive' : 'negative');
+            trend.innerHTML = `
+                <i class="fas fa-arrow-${diff >= 0 ? 'up' : 'down'}"></i>
+                <span>${Math.abs(diff)}%</span>
+            `;
+        }
+
+        // Get previous value for trend calculation
+        function getPreviousValue(metric) {
+            switch(metric) {
+                case 'response':
+                    return state.surveys.responses.length > 1 ? 
+                        (state.surveys.responses[state.surveys.responses.length - 2] / 
+                         state.surveys.sent[state.surveys.sent.length - 2] * 100) : 0;
+                case 'csat':
+                    return state.surveys.csat.length > 1 ?
+                        (state.surveys.csat[state.surveys.csat.length - 2] /
+                         state.surveys.responses[state.surveys.responses.length - 2] * 100) : 0;
+                case 'dsat':
+                    return state.surveys.dsat.length > 1 ?
+                        (state.surveys.dsat[state.surveys.dsat.length - 2] /
+                         state.surveys.responses[state.surveys.responses.length - 2] * 100) : 0;
+                case 'retention':
+                    return state.retention.retained.length > 1 ?
+                        (state.retention.retained[state.retention.retained.length - 2] /
+                         state.retention.total[state.retention.total.length - 2] * 100) : 0;
+                default:
+                    return 0;
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            const chartConfig = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: { family: "'Inter', sans-serif" }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: { family: "'Inter', sans-serif" },
+                        bodyFont: { family: "'Inter', sans-serif" }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: { family: "'Inter', sans-serif" }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: { family: "'Inter', sans-serif" }
+                        }
+                    }
+                }
+            };
+
+            // Survey chart
+            const surveyCtx = document.getElementById('survey-chart').getContext('2d');
+            surveyChart = new Chart(surveyCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Response Rate',
+                            borderColor: 'rgb(14, 165, 233)',
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                            fill: true,
+                            data: []
+                        },
+                        {
+                            label: 'CSAT Rate',
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            fill: true,
+                            data: []
+                        },
+                        {
+                            label: 'DSAT Rate',
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            data: []
+                        }
+                    ]
+                },
+                options: chartConfig
+            });
+
+            // Retention chart
+            const retentionCtx = document.getElementById('retention-chart').getContext('2d');
+            retentionChart = new Chart(retentionCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Current Retention',
+                            borderColor: 'rgb(14, 165, 233)',
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                            fill: true,
+                            data: []
+                        },
+                        {
+                            label: 'Projected Retention',
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            fill: true,
+                            data: []
+                        }
+                    ]
+                },
+                options: chartConfig
+            });
+        }
+
+        // Update survey chart
+        function updateSurveyChart() {
+            surveyChart.data.labels = state.surveys.dates;
+            surveyChart.data.datasets[0].data = state.surveys.responses.map((r, i) => 
+                (r / state.surveys.sent[i] * 100).toFixed(1));
+            surveyChart.data.datasets[1].data = state.surveys.csat.map((c, i) => 
+                (c / state.surveys.responses[i] * 100).toFixed(1));
+            surveyChart.data.datasets[2].data = state.surveys.dsat.map((d, i) => 
+                (d / state.surveys.responses[i] * 100).toFixed(1));
+            surveyChart.update();
+        }
+
+        // Update retention chart
+        function updateRetentionChart() {
+            retentionChart.data.labels = state.retention.dates;
+            retentionChart.data.datasets[0].data = state.retention.retained.map((r, i) => 
+                (r / state.retention.total[i] * 100).toFixed(1));
+            retentionChart.data.datasets[1].data = state.retention.projected.map((p, i) => 
+                (p / state.retention.total[i] * 100).toFixed(1));
+            retentionChart.update();
+        }
+
+        // Update summary metrics
+        function updateSummary() {
+            const totalSurveys = state.surveys.sent.reduce((a, b) => a + b, 0);
+            const totalResponses = state.surveys.responses.reduce((a, b) => a + b, 0);
+            const totalCsat = state.surveys.csat.reduce((a, b) => a + b, 0);
+            const avgRetention = state.retention.retained.length ? 
+                (state.retention.retained[state.retention.retained.length - 1] / 
+                 state.retention.total[state.retention.total.length - 1] * 100).toFixed(1) : 0;
+
+            document.getElementById('total-surveys').textContent = totalSurveys.toLocaleString();
+            document.getElementById('total-responses').textContent = totalResponses.toLocaleString();
+            document.getElementById('total-satisfaction').textContent = 
+                ((totalCsat / totalResponses * 100) || 0).toFixed(1) + '%';
+            document.getElementById('total-retention').textContent = avgRetention + '%';
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('surveyMetricsData', JSON.stringify(state));
+        }
+
+        // Load saved data
+        function loadSavedData() {
+            const savedData = localStorage.getItem('surveyMetricsData');
+            if (savedData) {
+                Object.assign(state, JSON.parse(savedData));
+                updateSummary();
+                updateSurveyChart();
+                updateRetentionChart();
+            }
+        }
+
+        // Export data
+        function exportData(type) {
+            const data = type === 'survey' ? state.surveys : state.retention;
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${type}-metrics-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+       
+// Metrics Calculator functionality
+function initializeMetricsCalculator() {
+    const inputs = {
+        targetCsat: document.getElementById('target-csat'),
+        currentTotal: document.getElementById('current-total'),
+        targetRetention: document.getElementById('target-retention'),
+        currentDsat: document.getElementById('current-dsat')
+    };
+
+    const results = {
+        requiredCsat: document.getElementById('required-csat'),
+        safetySurveys: document.getElementById('safety-surveys'),
+        retentionTarget: document.getElementById('retention-target'),
+        additionalRetention: document.getElementById('additional-retention')
+    };
+
+    function calculateMetrics() {
+        const targetCsat = Number(inputs.targetCsat.value);
+        const currentTotal = Number(inputs.currentTotal.value);
+        const targetRetention = Number(inputs.targetRetention.value);
+        const currentDsat = Number(inputs.currentDsat.value);
+
+        // Calculate required CSAT responses to hit target
+        const totalResponsesNeeded = Math.ceil(currentTotal * (targetCsat / 100));
+        const additionalCsatNeeded = totalResponsesNeeded - (currentTotal - currentDsat);
+
+        // Calculate surveys needed to avoid DSAT impact
+        const safetySurveys = Math.ceil(currentDsat * 1.2); // 20% buffer
+
+        // Calculate retention targets
+        const retentionTarget = Math.ceil(currentTotal * (targetRetention / 100));
+        const additionalRetentionNeeded = retentionTarget - currentTotal;
+
+        // Update results
+        results.requiredCsat.textContent = additionalCsatNeeded.toLocaleString();
+        results.safetySurveys.textContent = safetySurveys.toLocaleString();
+        results.retentionTarget.textContent = retentionTarget.toLocaleString();
+        results.additionalRetention.textContent = additionalRetentionNeeded.toLocaleString();
+    }
+
+    // Add event listeners to all inputs
+    Object.values(inputs).forEach(input => {
+        input.addEventListener('input', calculateMetrics);
+    });
+
+    // Initial calculation
+    calculateMetrics();
+}
+
+// Add this line to the document.addEventListener('DOMContentLoaded') function
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    loadSavedData();
+    initializeMetricsCalculator(); // Add this line
+})
+        }
+    </script>
+</body>
+</html>
