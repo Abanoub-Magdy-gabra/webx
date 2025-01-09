@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Customer Metrics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Previous styles remain the same */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #6366f1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        /* Previous styles remain the same */
+        
+        /* New styles for survey tracking */
+        .survey-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .survey-stat {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .survey-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .survey-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .completion-rate {
+            font-size: 1.25rem;
+            color: var(--success);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Previous header remains the same -->
+
+    <main class="main-container">
+        <div class="dashboard-grid">
+            <!-- New Survey Response Widget -->
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-poll"></i>
+                        Survey Responses
+                    </div>
+                    <div class="widget-actions">
+                        <button class="widget-button" onclick="toggleSurveyInputs()">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="widget-button" onclick="exportSurveyData()">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="survey-inputs" class="metric-input-container" style="display: none;">
+                    <div class="metric-input-group">
+                        <label>Surveys Sent:</label>
+                        <input type="number" class="metric-input" id="surveys-sent" min="0">
+                    </div>
+                    <div class="metric-input-group">
+                        <label>Surveys Received:</label>
+                        <input type="number" class="metric-input" id="surveys-received" min="0">
+                    </div>
+                    <button class="widget-button" onclick="updateSurveyMetrics()">Update</button>
+                </div>
+
+                <div class="survey-stats">
+                    <div class="survey-stat">
+                        <div class="survey-number" id="total-sent">0</div>
+                        <div class="survey-label">Surveys Sent</div>
+                    </div>
+                    <div class="survey-stat">
+                        <div class="survey-number" id="total-received">0</div>
+                        <div class="survey-label">Surveys Received</div>
+                    </div>
+                    <div class="survey-stat">
+                        <div class="completion-rate" id="completion-rate">0%</div>
+                        <div class="survey-label">Completion Rate</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="survey-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Previous widgets remain the same -->
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // Previous JavaScript functions remain the same
+
+        // New functions for survey tracking
+        let surveyChart;
+        let surveyData = {
+            sent: [],
+            received: []
+        };
+
+        function toggleSurveyInputs() {
+            const inputContainer = document.getElementById('survey-inputs');
+            inputContainer.style.display = inputContainer.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function updateSurveyMetrics() {
+            const sent = parseInt(document.getElementById('surveys-sent').value) || 0;
+            const received = parseInt(document.getElementById('surveys-received').value) || 0;
+            
+            // Update displays
+            document.getElementById('total-sent').textContent = sent.toLocaleString();
+            document.getElementById('total-received').textContent = received.toLocaleString();
+            
+            // Calculate and update completion rate
+            const completionRate = sent > 0 ? ((received / sent) * 100).toFixed(1) : 0;
+            document.getElementById('completion-rate').textContent = `${completionRate}%`;
+            
+            // Update chart data
+            surveyData.sent.push(sent);
+            surveyData.received.push(received);
+            
+            // Keep only last 6 months of data
+            if (surveyData.sent.length > 6) {
+                surveyData.sent.shift();
+                surveyData.received.shift();
+            }
+            
+            updateSurveyChart();
+        }
+
+        function updateSurveyChart() {
+            if (!surveyChart) {
+                const ctx = document.getElementById('survey-chart').getContext('2d');
+                surveyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: getLastMonths(6),
+                        datasets: [
+                            {
+                                label: 'Surveys Sent',
+                                data: surveyData.sent,
+                                backgroundColor: 'rgba(14, 165, 233, 0.5)',
+                                borderColor: 'rgba(14, 165, 233, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Surveys Received',
+                                data: surveyData.received,
+                                backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                surveyChart.data.datasets[0].data = surveyData.sent;
+                surveyChart.data.datasets[1].data = surveyData.received;
+                surveyChart.update();
+            }
+        }
+
+        function exportSurveyData() {
+            const data = {
+                sent: surveyData.sent,
+                received: surveyData.received,
+                completionRate: document.getElementById('completion-rate').textContent,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `survey-metrics-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize all charts on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            updateSurveyChart();
+        });
+    </script>
+</body>
+</html>
