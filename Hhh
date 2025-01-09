@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Customer Metrics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #6366f1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .widget {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .widget-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .widget-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .widget-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .metric-input-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .metric-input-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem;
+            border-radius: 4px;
+            color: var(--light);
+            width: 100px;
+        }
+
+        .metric-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .trend.positive {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .trend.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .target-progress {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .target-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            width: 0;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                METRICS DASHBOARD
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="dashboard-grid">
+            <!-- CSAT Widget -->
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-smile"></i>
+                        Customer Satisfaction
+                    </div>
+                    <div class="widget-actions">
+                        <button class="widget-button" onclick="toggleMetricInputs('csat')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="widget-button" onclick="exportMetrics('csat')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="csat-inputs" class="metric-input-container" style="display: none;">
+                    <div class="metric-input-group">
+                        <label>Current:</label>
+                        <input type="number" class="metric-input" id="csat-current" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="metric-input-group">
+                        <label>Target:</label>
+                        <input type="number" class="metric-input" id="csat-target" min="0" max="100" step="0.1">
+                    </div>
+                    <button class="widget-button" onclick="updateMetric('csat')">Update</button>
+                </div>
+
+                <div class="metric-list">
+                    <div class="metric-item">
+                        <div class="metric-value">
+                            <i class="fas fa-chart-bar"></i>
+                            <span id="current-csat">--</span>
+                        </div>
+                        <div class="metric-label">Current CSAT</div>
+                        <div id="csat-trend" class="trend"></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">
+                            <i class="fas fa-bullseye"></i>
+                            <span id="target-csat">--</span>
+                        </div>
+                        <div class="metric-label">Target CSAT</div>
+                        <div class="target-progress">
+                            <div id="csat-progress" class="target-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="csat-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Retention Widget -->
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-users"></i>
+                        Customer Retention
+                    </div>
+                    <div class="widget-actions">
+                        <button class="widget-button" onclick="toggleMetricInputs('retention')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="widget-button" onclick="exportMetrics('retention')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="retention-inputs" class="metric-input-container" style="display: none;">
+                    <div class="metric-input-group">
+                        <label>Current:</label>
+                        <input type="number" class="metric-input" id="retention-current" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="metric-input-group">
+                        <label>Target:</label>
+                        <input type="number" class="metric-input" id="retention-target" min="0" max="100" step="0.1">
+                    </div>
+                    <button class="widget-button" onclick="updateMetric('retention')">Update</button>
+                </div>
+
+                <div class="metric-list">
+                    <div class="metric-item">
+                        <div class="metric-value">
+                            <i class="fas fa-chart-bar"></i>
+                            <span id="current-retention">--</span>
+                        </div>
+                        <div class="metric-label">Current Retention</div>
+                        <div id="retention-trend" class="trend"></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">
+                            <i class="fas fa-bullseye"></i>
+                            <span id="target-retention">--</span>
+                        </div>
+                        <div class="metric-label">Target Retention</div>
+                        <div class="target-progress">
+                            <div id="retention-progress" class="target-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="retention-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Feedback Widget -->
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-comments"></i>
+                        Customer Feedback
+                    </div>
+                    <div class="widget-actions">
+                        <button class="widget-button" onclick="toggleMetricInputs('feedback')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="widget-button" onclick="exportMetrics('feedback')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="feedback-inputs" class="metric-input-container" style="display: none;">
+                    <div class="metric-input-group">
+                        <label>Current:</label>
+                        <input type="number" class="metric-input" id="feedback-current" min="0" max="5" step="0.1">
+                    </div>
+                    <div class="metric-input-group">
+                        <label>Target:</label>
+                        <input type="number" class="metric-input" id="feedback-target" min="0" max="5" step="0.1">
+                    </div>
+                    <button class="widget-button" onclick="updateMetric('feedback')">Update</button>
+                </div>
+
+                <div class="metric-list">
+                    <div class="metric-item">
+                        <div class="metric-value">
+                            <i class="fas fa-star"></i>
+                            <span id="current-feedback">--</span>
+                        </div>
+                        <div class="metric-label">Current Rating</div>
+                        <div id="feedback-trend" class="trend"></div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">
+                            <i class="fas fa-bullseye"></i>
+                            <span id="target-feedback">--</span>
+                        </div>
+                        <div class="metric-label">Target Rating</div>
+                        <div class="target-progress">
+                            <div id="feedback-progress" class="target-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="feedback-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // Chart instances
+        let csatChart, retentionChart, feedbackChart;
+
+        // Toggle metric input fields
+        function toggleMetricInputs(metricType) {
+            const inputContainer = document.getElementById(`${metricType}-inputs`);
+            inputContainer.style.display = inputContainer.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Update metric values and visuals
+        function updateMetric(metricType) {
+            const current = parseFloat(document.getElementById(`${metricType}-current`).value);
+            const target = parseFloat(document.getElementById(`${metricType}-target`).value);
+            
+            if (isNaN(current) || isNaN(target)) return;
+
+            // Update displays
+            document.getElementById(`current-${metricType}`).textContent = 
+                metricType ===metricType === 'feedback' ? current.toFixed(1) : current.toFixed(1) + '%';
+            document.getElementById(`target-${metricType}`).textContent = 
+                metricType === 'feedback' ? target.toFixed(1) : target.toFixed(1) + '%';
+
+            // Calculate progress and update progress bar
+            const progress = (current / target) * 100;
+            const progressBar = document.getElementById(`${metricType}-progress`);
+            progressBar.style.width = Math.min(100, progress) + '%';
+            progressBar.style.backgroundColor = progress >= 100 ? 'var(--success)' : 'var(--primary)';
+
+            // Update trend indicator
+            const trend = document.getElementById(`${metricType}-trend`);
+            const diff = current - target;
+            trend.className = `trend ${diff >= 0 ? 'positive' : 'negative'}`;
+            trend.innerHTML = `
+                <i class="fas fa-arrow-${diff >= 0 ? 'up' : 'down'}"></i>
+                <span>${Math.abs(diff).toFixed(1)}${metricType === 'feedback' ? '' : '%'}</span>
+            `;
+
+            // Update chart
+            updateChart(metricType, current, target);
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            const chartConfig = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: {
+                                family: "'Inter', sans-serif"
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: {
+                                family: "'Inter', sans-serif"
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: {
+                                family: "'Inter', sans-serif"
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Initialize each chart
+            const chartTypes = ['csat', 'retention', 'feedback'];
+            const colors = {
+                csat: '#0ea5e9',
+                retention: '#22c55e',
+                feedback: '#6366f1'
+            };
+
+            chartTypes.forEach(type => {
+                const ctx = document.getElementById(`${type}-chart`).getContext('2d');
+                window[`${type}Chart`] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: getLastMonths(6),
+                        datasets: [{
+                            label: 'Current',
+                            data: [],
+                            borderColor: colors[type],
+                            backgroundColor: `${colors[type]}33`,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: chartConfig
+                });
+            });
+        }
+
+        // Update chart data
+        function updateChart(metricType, current, target) {
+            const chart = window[`${metricType}Chart`];
+            if (!chart) return;
+
+            // Generate historical data
+            const data = generateHistoricalData(current, 6, metricType === 'feedback' ? 5 : 100);
+            
+            // Update current value dataset
+            chart.data.datasets[0].data = data;
+
+            // Add or update target line
+            if (chart.data.datasets.length === 1) {
+                chart.data.datasets.push({
+                    label: 'Target',
+                    data: Array(6).fill(target),
+                    borderColor: '#22c55e',
+                    borderDash: [5, 5],
+                    fill: false
+                });
+            } else {
+                chart.data.datasets[1].data = Array(6).fill(target);
+            }
+
+            chart.update();
+        }
+
+        // Generate historical data with realistic variations
+        function generateHistoricalData(currentValue, months, maxValue) {
+            const data = [];
+            let value = currentValue;
+            
+            // Generate past months data
+            for (let i = 0; i < months - 1; i++) {
+                value = value + (Math.random() - 0.5) * (maxValue * 0.05);
+                value = Math.max(0, Math.min(maxValue, value));
+                data.unshift(value);
+            }
+            
+            // Add current value
+            data.push(currentValue);
+            
+            return data;
+        }
+
+        // Get last N months for chart labels
+        function getLastMonths(count) {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const today = new Date();
+            const result = [];
+
+            for (let i = count - 1; i >= 0; i--) {
+                const month = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                result.push(months[month.getMonth()]);
+            }
+
+            return result;
+        }
+
+        // Export metrics data
+        function exportMetrics(metricType) {
+            const current = document.getElementById(`${metricType}-current`).value;
+            const target = document.getElementById(`${metricType}-target`).value;
+            const chart = window[`${metricType}Chart`];
+
+            const data = {
+                metric: metricType,
+                current: current,
+                target: target,
+                historicalData: chart.data.datasets[0].data,
+                exportDate: new Date().toISOString()
+            };
+
+            // Create and download file
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${metricType}-metrics-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize dashboard on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+    </script>
+</body>
+</html>
