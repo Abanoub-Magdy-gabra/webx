@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Metrics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #6366f1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--light);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 1rem auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+            outline: none;
+        }
+
+        input:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+        }
+
+        .tooltip {
+            position: absolute;
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: help;
+        }
+
+        .tooltip i {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            right: 24px;
+            top: 0;
+            background: var(--dark);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            width: 200px;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .calculate-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .calculate-btn:hover::after {
+            left: 100%;
+        }
+
+        .results {
+            margin-top: 3rem;
+            display: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.85rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .chart-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .input-error {
+            border-color: var(--danger) !important;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .metric-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading .spinner {
+            display: block;
+        }
+
+        .loading .btn-text {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">METRICS DASHBOARD</div>
+            <h1>Customer Experience Analytics</h1>
+            <div class="subtitle">Advanced analytics for tracking and improving customer satisfaction, retention, and overall experience</div>
+        </div>
+
+        <div class="grid">
+            <div class="input-group">
+                <label for="target-csat">Target CSAT Score</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-bullseye"></i>
+                    <input id="target-csat" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The desired customer satisfaction score you aim to achieve
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid target between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="max-dsat">Maximum DSAT Score</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-exclamation-triangle"></i>
+                    <input id="max-dsat" type="number" placeholder="Enter maximum (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The maximum acceptable dissatisfaction score threshold
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid maximum between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="target-retention">Target Retention Rate</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-user-check"></i>
+                    <input id="target-retention" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The percentage of customers you aim to retain
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid target between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="current-surveys">Total Survey Responses</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-poll"></i>
+                    <input id="current-surveys" type="number" placeholder="Enter total responses" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The total number of survey responses received
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid number of responses</div>
+            </div>
+
+            <div class="input-group">
+                <label for="satisfied-customers">Satisfied Customers</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-smile"></i>
+                    <input id="satisfied-customers" type="number" placeholder="Enter satisfied customers" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            Number of customers who reported satisfaction
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid number</div>
+            </div>
+
+            <div class="input-group">
+                <label for="dissatisfied-customers">Dissatisfied Customers</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-frown"></i>
+                    <input id="dissatisfied-customers" type="number" placeholder="Enter dissatisfied customers" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            Number of customers who reported dissatisfaction
+                        </div>
+                    </div><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Metrics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #6366f1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--light);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 1rem auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+            outline: none;
+        }
+
+        input:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+        }
+
+        .tooltip {
+            position: absolute;
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: help;
+        }
+
+        .tooltip i {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            right: 24px;
+            top: 0;
+            background: var(--dark);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            width: 200px;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .calculate-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .calculate-btn:hover::after {
+            left: 100%;
+        }
+
+        .results {
+            margin-top: 3rem;
+            display: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.85rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .chart-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .input-error {
+            border-color: var(--danger) !important;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .metric-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading .spinner {
+            display: block;
+        }
+
+        .loading .btn-text {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">METRICS DASHBOARD</div>
+            <h1>Customer Experience Analytics</h1>
+            <div class="subtitle">Advanced analytics for tracking and improving customer satisfaction, retention, and overall experience</div>
+        </div>
+
+        <div class="grid">
+            <div class="input-group">
+                <label for="target-csat">Target CSAT Score</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-bullseye"></i>
+                    <input id="target-csat" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The desired customer satisfaction score you aim to achieve
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid target between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="max-dsat">Maximum DSAT Score</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-exclamation-triangle"></i>
+                    <input id="max-dsat" type="number" placeholder="Enter maximum (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The maximum acceptable dissatisfaction score threshold
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid maximum between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="target-retention">Target Retention Rate</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-user-check"></i>
+                    <input id="target-retention" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The percentage of customers you aim to retain
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid target between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="current-surveys">Total Survey Responses</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-poll"></i>
+                    <input id="current-surveys" type="number" placeholder="Enter total responses" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The total number of survey responses received
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid number of responses</div>
+            </div>
+
+            <div class="input-group">
+                <label for="satisfied-customers">Satisfied Customers</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-smile"></i>
+                    <input id="satisfied-customers" type="number" placeholder="Enter satisfied customers" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            Number of customers who reported satisfaction
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid number</div>
+            </div>
+
+            <div class="input-group">
+                <label for="dissatisfied-customers">Dissatisfied Customers</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-frown"></i>
+                    <input id="dissatisfied-customers" type="number" placeholder="Enter dissatisfied customers" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            Number of customers who reported dissatisfaction
+                        </div>
+                    </div><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Metrics Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #6366f1;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--light);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 1rem auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+            outline: none;
+        }
+
+        input:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .unit {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+        }
+
+        .tooltip {
+            position: absolute;
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: help;
+        }
+
+        .tooltip i {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            right: 24px;
+            top: 0;
+            background: var(--dark);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            width: 200px;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .calculate-btn::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .calculate-btn:hover::after {
+            left: 100%;
+        }
+
+        .results {
+            margin-top: 3rem;
+            display: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.85rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        .chart-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 16px;
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .input-error {
+            border-color: var(--danger) !important;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .metric-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading .spinner {
+            display: block;
+        }
+
+        .loading .btn-text {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">METRICS DASHBOARD</div>
+            <h1>Customer Experience Analytics</h1>
+            <div class="subtitle">Advanced analytics for tracking and improving customer satisfaction, retention, and overall experience</div>
+        </div>
+
+        <div class="grid">
+            <div class="input-group">
+                <label for="target-csat">Target CSAT Score</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-bullseye"></i>
+                    <input id="target-csat" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The desired customer satisfaction score you aim to achieve
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid target between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="max-dsat">Maximum DSAT Score</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-exclamation-triangle"></i>
+                    <input id="max-dsat" type="number" placeholder="Enter maximum (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The maximum acceptable dissatisfaction score threshold
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid maximum between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="target-retention">Target Retention Rate</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-user-check"></i>
+                    <input id="target-retention" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The percentage of customers you aim to retain
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid target between 0 and 100</div>
+            </div>
+
+            <div class="input-group">
+                <label for="current-surveys">Total Survey Responses</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-poll"></i>
+                    <input id="current-surveys" type="number" placeholder="Enter total responses" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            The total number of survey responses received
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid number of responses</div>
+            </div>
+
+            <div class="input-group">
+                <label for="satisfied-customers">Satisfied Customers</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-smile"></i>
+                    <input id="satisfied-customers" type="number" placeholder="Enter satisfied customers" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            Number of customers who reported satisfaction
+                        </div>
+                    </div>
+                </div>
+                <div class="error-message">Please enter a valid number</div>
+            </div>
+
+            <div class="input-group">
+                <label for="dissatisfied-customers">Dissatisfied Customers</label>
+                <div class="input-wrapper">
+                    <i class="input-icon fas fa-frown"></i>
+                    <input id="dissatisfied-customers" type="number" placeholder="Enter dissatisfied customers" min="0">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="tooltip-content">
+                            Number of customers who reported dissatisfaction
+                        </div>
+                    </div>
+</div>
+                <div class="error-message">Please enter a valid number</div>
+            </div>
+        </div>
+
+        <button onclick="calculateMetrics()" class="calculate-btn">
+            <div class="spinner"></div>
+            <span class="btn-text">Calculate Metrics</span>
+        </button>
+
+        <div class="results" id="results">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Current CSAT</div>
+                    <div class="metric-value" id="current-csat">0%</div>
+                    <div class="metric-change" id="csat-change">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>0%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Current DSAT</div>
+                    <div class="metric-value" id="current-dsat">0%</div>
+                    <div class="metric-change" id="dsat-change">
+                        <i class="fas fa-arrow-down"></i>
+                        <span>0%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Current Retention</div>
+                    <div class="metric-value" id="current-retention">0%</div>
+                    <div class="metric-change" id="retention-change">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>0%</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Additional Surveys Needed</div>
+                    <div class="metric-value" id="surveys-needed">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Required Satisfied</div>
+                    <div class="metric-value" id="satisfied-needed">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Max Allowed Dissatisfied</div>
+                    <div class="metric-value" id="max-dissatisfied">0</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <div class="chart-title">Metrics Overview</div>
+                    <canvas id="metrics-chart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Customer Response Distribution</div>
+                    <canvas id="distribution-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let metricsChart;
+        let distributionChart;
+        let previousMetrics = null;
+
+        // Initialize tooltips
+        Chart.defaults.color = '#fff';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+        function validateInput(input, min, max) {
+            const value = parseFloat(input.value);
+            const errorMessage = input.parentElement.parentElement.querySelector('.error-message');
+            const isValid = !isNaN(value) && value >= min && (max ? value <= max : true);
+            
+            input.classList.toggle('input-error', !isValid);
+            errorMessage.style.display = isValid ? 'none' : 'block';
+            
+            return isValid;
+        }
+
+        function validateAllInputs() {
+            const inputs = {
+                targetCSAT: document.getElementById('target-csat'),
+                maxDSAT: document.getElementById('max-dsat'),
+                targetRetention: document.getElementById('target-retention'),
+                currentSurveys: document.getElementById('current-surveys'),
+                satisfiedCustomers: document.getElementById('satisfied-customers'),
+                dissatisfiedCustomers: document.getElementById('dissatisfied-customers')
+            };
+
+            let isValid = true;
+
+            // Validate percentage inputs
+            isValid &= validateInput(inputs.targetCSAT, 0, 100);
+            isValid &= validateInput(inputs.maxDSAT, 0, 100);
+            isValid &= validateInput(inputs.targetRetention, 0, 100);
+
+            // Validate numeric inputs
+            isValid &= validateInput(inputs.currentSurveys, 0);
+            isValid &= validateInput(inputs.satisfiedCustomers, 0);
+            isValid &= validateInput(inputs.dissatisfiedCustomers, 0);
+
+            // Additional validation for totals
+            const total = parseInt(inputs.satisfiedCustomers.value) + parseInt(inputs.dissatisfiedCustomers.value);
+            const currentSurveys = parseInt(inputs.currentSurveys.value);
+            
+            if (total > currentSurveys) {
+                alert("Total of satisfied and dissatisfied customers cannot exceed total surveys");
+                isValid = false;
+            }
+
+            return isValid ? {
+                targetCSAT: parseFloat(inputs.targetCSAT.value),
+                maxDSAT: parseFloat(inputs.maxDSAT.value),
+                targetRetention: parseFloat(inputs.targetRetention.value),
+                currentSurveys: parseInt(inputs.currentSurveys.value),
+                satisfiedCustomers: parseInt(inputs.satisfiedCustomers.value),
+                dissatisfiedCustomers: parseInt(inputs.dissatisfiedCustomers.value)
+            } : null;
+        }
+
+        function calculateMetrics() {
+            const button = document.querySelector('.calculate-btn');
+            button.classList.add('loading');
+
+            setTimeout(() => {
+                const inputs = validateAllInputs();
+                if (!inputs) {
+                    button.classList.remove('loading');
+                    return;
+                }
+
+                const {
+                    targetCSAT,
+                    maxDSAT,
+                    targetRetention,
+                    currentSurveys,
+                    satisfiedCustomers,
+                    dissatisfiedCustomers
+                } = inputs;
+
+                const currentCSAT = ((satisfiedCustomers / currentSurveys) * 100).toFixed(1);
+                const currentDSAT = ((dissatisfiedCustomers / currentSurveys) * 100).toFixed(1);
+                const neutralCustomers = currentSurveys - satisfiedCustomers - dissatisfiedCustomers;
+                const currentRetention = (((currentSurveys - dissatisfiedCustomers) / currentSurveys) * 100).toFixed(1);
+
+                let additionalSurveysNeeded = 0;
+                let satisfiedResponsesNeeded = 0;
+                let maxAllowedDissatisfied = Math.floor((maxDSAT / 100) * currentSurveys);
+
+                if (currentCSAT < targetCSAT || currentDSAT > maxDSAT || currentRetention < targetRetention) {
+                    const targetSatisfied = Math.ceil((targetCSAT / 100) * currentSurveys);
+                    const minRetention = Math.ceil((targetRetention / 100) * currentSurveys);
+                    
+                    satisfiedResponsesNeeded = Math.max(
+                        targetSatisfied - satisfiedCustomers,
+                        minRetention - (currentSurveys - dissatisfiedCustomers)
+                    );
+                    
+                    additionalSurveysNeeded = Math.ceil(satisfiedResponsesNeeded / (targetCSAT / 100));
+                }
+
+                // Calculate changes from previous metrics
+                const metrics = {
+                    csat: parseFloat(currentCSAT),
+                    dsat: parseFloat(currentDSAT),
+                    retention: parseFloat(currentRetention)
+                };
+
+                if (previousMetrics) {
+                    updateMetricChange('csat', metrics.csat - previousMetrics.csat);
+                    updateMetricChange('dsat', metrics.dsat - previousMetrics.dsat);
+                    updateMetricChange('retention', metrics.retention - previousMetrics.retention);
+                }
+
+                previousMetrics = metrics;
+
+                // Update metrics with animation
+                animateValue('current-csat', currentCSAT + '%');
+                animateValue('current-dsat', currentDSAT + '%');
+                animateValue('current-retention', currentRetention + '%');
+                animateValue('surveys-needed', additionalSurveysNeeded);
+                animateValue('satisfied-needed', satisfiedResponsesNeeded);
+                animateValue('max-dissatisfied', maxAllowedDissatisfied);
+
+                // Show results with animation
+                const results = document.getElementById('results');
+                results.style.display = 'block';
+                results.classList.add('fade-in');
+
+                updateCharts({
+                    currentCSAT,
+                    targetCSAT,
+                    currentDSAT,
+                    maxDSAT,
+                    currentRetention,
+                    targetRetention,
+                    satisfiedCustomers,
+                    dissatisfiedCustomers,
+                    neutralCustomers
+                });
+
+                button.classList.remove('loading');
+            }, 800);
+        }
+
+        function updateMetricChange(metric, change) {
+            const element = document.getElementById(`${metric}-change`);
+            const icon = element.querySelector('i');
+            const value = element.querySelector('span');
+            
+            icon.className = change >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down';
+            element.className = `metric-change ${change >= 0 ? '' : 'negative'}`;
+            value.textContent = `${Math.abs(change).toFixed(1)}%`;
+        }
+
+        function animateValue(elementId, endValue) {
+            const element = document.getElementById(elementId);
+            const start = parseInt(element.innerHTML) || 0;
+            const end = parseInt(endValue) || 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const value = Math.floor(start + (end - start) * progress);
+                element.innerHTML = elementId.includes('csat') || elementId.includes('dsat') || elementId.includes('retention') 
+                    ? value + '%' 
+                    : value;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function updateCharts(data) {
+            // Update Metrics Overview Chart
+            const metricsCtx = document.getElementById('metrics-chart').getContext('2d');
+            if (metricsChart) metricsChart.destroy();
+
+            metricsChart = new Chart(metricsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CSAT', 'DSAT', 'Retention'],
+                    datasets: [
+                        {
+                            label: 'Current',
+                            data: [data.currentCSAT, data.currentDSAT, data.currentRetention],
+                            backgroundColor: '#0ea5e9',
+                            borderRadius: 8
+                        },
+                        {
+                            label: 'Target',
+                            data: [data.targetCSAT, data.maxDSAT, data.targetRetention],
+                            backgroundColor: '#6366f1',
+                            borderRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Update Distribution Chart
+            const distributionCtx = document.getElementById('distribution-chart').getContext('2d');
+            if (distributionChart) distributionChart.destroy();
+
+            distributionChart = new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Satisfied', 'Neutral', 'Dissatisfied'],
+                    datasets: [{
+                        data: [
+                            data.satisfiedCustomers,
+                            data.neutralCustomers,
+                            data.dissatisfiedCustomers
+                        ],
+                        backgroundColor: [
+                            '#22c55e',
+                            '#6366f1',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Add input validation on blur
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('blur', () => {
+                if (input.id.includes('target') || input.id.includes('max')) {
+                    validateInput(input, 0, 100);
+                } else {
+                    validateInput(input, 0);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
