@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retention & DSAT Calculator by Abanoub</title>
+    <style>
+        /* Style the layout and UI elements similar to the previous CSAT calculator */
+        /* (styles omitted for brevity; use the styles from the provided CSAT calculator) */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="branding">
+            <div class="logo">ABANOUB DEVELOPER</div>
+            <h1>Retention & DSAT Calculator</h1>
+            <div class="subtitle">Analyze retention rate, DSAT, and transferred surveys</div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="target-retention">Target Retention Rate</label>
+                <div class="input-wrapper">
+                    <input id="target-retention" type="number" placeholder="Enter target (0-100)" min="0" max="100">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="current-customers">Current Total Customers</label>
+                <input id="current-customers" type="number" placeholder="Enter total customers" min="0">
+            </div>
+            <div class="form-group">
+                <label for="retained-customers">Retained Customers</label>
+                <input id="retained-customers" type="number" placeholder="Enter retained customers" min="0">
+            </div>
+            <div class="form-group">
+                <label for="dsat-surveys">DSAT Surveys</label>
+                <input id="dsat-surveys" type="number" placeholder="Enter DSAT survey count" min="0">
+            </div>
+            <div class="form-group">
+                <label for="transferred-surveys">Transferred Surveys</label>
+                <input id="transferred-surveys" type="number" placeholder="Enter transferred surveys" min="0">
+            </div>
+        </div>
+
+        <button onclick="calculateMetrics()">Calculate Metrics</button>
+
+        <div class="results" id="results">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Current Retention Rate</div>
+                    <div class="metric-value" id="current-retention">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">DSAT Percentage</div>
+                    <div class="metric-value" id="dsat-percentage">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Transferred Percentage</div>
+                    <div class="metric-value" id="transferred-percentage">0%</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <div class="chart-title">Retention vs DSAT</div>
+                    <canvas id="retention-dsat-chart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Transferred Surveys Analysis</div>
+                    <canvas id="transferred-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let retentionDSATChart;
+        let transferredChart;
+
+        function calculateMetrics() {
+            const targetRetention = parseFloat(document.getElementById('target-retention').value);
+            const currentCustomers = parseInt(document.getElementById('current-customers').value);
+            const retainedCustomers = parseInt(document.getElementById('retained-customers').value);
+            const dsatSurveys = parseInt(document.getElementById('dsat-surveys').value);
+            const transferredSurveys = parseInt(document.getElementById('transferred-surveys').value);
+
+            if (isNaN(targetRetention) || isNaN(currentCustomers) || isNaN(retainedCustomers) || isNaN(dsatSurveys) || isNaN(transferredSurveys) ||
+                targetRetention <= 0 || targetRetention > 100 || retainedCustomers > currentCustomers || currentCustomers === 0) {
+                alert("Please provide valid inputs.");
+                return;
+            }
+
+            const currentRetention = ((retainedCustomers / currentCustomers) * 100).toFixed(1);
+            const dsatPercentage = ((dsatSurveys / currentCustomers) * 100).toFixed(1);
+            const transferredPercentage = ((transferredSurveys / currentCustomers) * 100).toFixed(1);
+
+            // Update metrics
+            animateValue('current-retention', currentRetention + '%');
+            animateValue('dsat-percentage', dsatPercentage + '%');
+            animateValue('transferred-percentage', transferredPercentage + '%');
+
+            // Show results
+            const results = document.getElementById('results');
+            results.style.display = 'block';
+            results.classList.add('fade-in');
+
+            updateCharts(currentRetention, dsatPercentage, transferredPercentage);
+        }
+
+        function animateValue(elementId, endValue) {
+            const element = document.getElementById(elementId);
+            const start = parseFloat(element.innerHTML) || 0;
+            const end = parseFloat(endValue) || 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                const value = start + (end - start) * progress;
+                element.innerHTML = elementId.includes('percentage') || elementId.includes('retention') ? value.toFixed(1) + '%' : value.toFixed(0);
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function updateCharts(retention, dsat, transferred) {
+            const retentionDSATCtx = document.getElementById('retention-dsat-chart').getContext('2d');
+            if (retentionDSATChart) retentionDSATChart.destroy();
+
+            retentionDSATChart = new Chart(retentionDSATCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Retention Rate', 'DSAT Rate'],
+                    datasets: [{
+                        data: [retention, dsat],
+                        backgroundColor: ['#38bdf8', 'rgba(255, 99, 132, 0.7)'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+
+            const transferredCtx = document.getElementById('transferred-chart').getContext('2d');
+            if (transferredChart) transferredChart.destroy();
+
+            transferredChart = new Chart(transferredCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Transferred Surveys'],
+                    datasets: [{
+                        label: 'Transferred',
+                        data: [transferred],
+                        backgroundColor: '#38bdf8'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
