@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retention Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Customer Satisfaction & Retention Analysis</h2>
+      <div class="form">
+        <input type="number" id="totalCalls" placeholder="Total Calls">
+        <input type="number" id="dsatTarget" placeholder="DSAT Target %">
+        <input type="number" id="retentionTarget" placeholder="Retention Target %">
+        <input type="number" id="currentSurveys" placeholder="Current Surveys">
+        <input type="number" id="dissatisfiedCustomers" placeholder="Dissatisfied Customers">
+        <input type="number" id="retainedCustomers" placeholder="Retained Customers">
+      </div>
+      <button id="analyzeButton">Analyze Metrics</button>
+    </div>
+
+    <div id="results" class="results hidden">
+      <div class="card">
+        <h2>Historical Trends</h2>
+        <canvas id="lineChart" width="500" height="300"></canvas>
+      </div>
+
+      <div class="card">
+        <h2>DSAT vs Retention Correlation</h2>
+        <canvas id="scatterChart" width="500" height="300"></canvas>
+      </div>
+
+      <div class="card">
+        <h2>AI-Powered Insights</h2>
+        <div id="insights" class="insights"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+document.addEventListener("DOMContentLoaded", () => {
+  const analyzeButton = document.getElementById("analyzeButton");
+  const resultsSection = document.getElementById("results");
+  const insightsDiv = document.getElementById("insights");
+
+  const generateHistoricalData = () => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    return months.map((month) => ({
+      month,
+      dsat: Math.random() * 10 + 2,
+      retention: Math.random() * 15 + 80,
+    }));
+  };
+
+  const historicalData = generateHistoricalData();
+
+  const displayInsights = (insights) => {
+    insightsDiv.innerHTML = "";
+    insights.forEach((insight) => {
+      const alert = document.createElement("div");
+      alert.className = `alert ${insight.type}`;
+      alert.textContent = insight.message;
+      insightsDiv.appendChild(alert);
+    });
+  };
+
+  analyzeButton.addEventListener("click", () => {
+    const formData = {
+      totalCalls: parseInt(document.getElementById("totalCalls").value),
+      dsatTarget: parseFloat(document.getElementById("dsatTarget").value),
+      retentionTarget: parseFloat(document.getElementById("retentionTarget").value),
+      currentSurveys: parseInt(document.getElementById("currentSurveys").value),
+      dissatisfiedCustomers: parseInt(document.getElementById("dissatisfiedCustomers").value),
+      retainedCustomers: parseInt(document.getElementById("retainedCustomers").value),
+    };
+
+    if (Object.values(formData).some(isNaN)) return;
+
+    const currentDSAT = ((formData.dissatisfiedCustomers / formData.currentSurveys) * 100).toFixed(1);
+    const currentRetention = ((formData.retainedCustomers / formData.currentSurveys) * 100).toFixed(1);
+
+    const insights = [];
+    if (parseFloat(currentDSAT) > formData.dsatTarget) {
+      insights.push({
+        type: "warning",
+        message: `DSAT is ${(parseFloat(currentDSAT) - formData.dsatTarget).toFixed(1)}% above target.`,
+      });
+    }
+
+    if (parseFloat(currentRetention) < formData.retentionTarget) {
+      insights.push({
+        type: "warning",
+        message: `Retention is ${(formData.retentionTarget - parseFloat(currentRetention)).toFixed(1)}% below target.`,
+      });
+    }
+
+    resultsSection.classList.remove("hidden");
+    displayInsights(insights);
+  });
+});body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.card {
+  margin-bottom: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+h2 {
+  margin: 0 0 20px;
+}
+
+.form input {
+  width: calc(33.333% - 10px);
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.hidden {
+  display: none;
+}
+
+.insights .alert {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.alert.warning {
+  background-color: #ffe6e6;
+  color: #b30000;
+}
+
+.alert.info {
+  background-color: #e6f7ff;
+  color: #004085;
+}
