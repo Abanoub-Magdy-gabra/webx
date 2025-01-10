@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retention & DSAT Insights</title>
+    <style>
+        /* Keep the same styling as before */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="branding">
+            <div class="logo">ABANOUB DEVELOPER</div>
+            <h1>Retention & DSAT Calculator</h1>
+            <div class="subtitle">Gain insights into customer satisfaction</div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="dsat-target">DSAT Target Rate</label>
+                <div class="input-wrapper">
+                    <input id="dsat-target" type="number" placeholder="Enter target (e.g., 5)" min="0" max="100">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="retention-target">Retention Target Rate</label>
+                <div class="input-wrapper">
+                    <input id="retention-target" type="number" placeholder="Enter target (e.g., 90)" min="0" max="100">
+                    <span class="unit">%</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="current-surveys">Current Survey Responses</label>
+                <input id="current-surveys" type="number" placeholder="Enter total responses" min="0">
+            </div>
+            <div class="form-group">
+                <label for="dissatisfied-customers">Dissatisfied Customers</label>
+                <input id="dissatisfied-customers" type="number" placeholder="Enter dissatisfied customers" min="0">
+            </div>
+            <div class="form-group">
+                <label for="retained-customers">Retained Customers</label>
+                <input id="retained-customers" type="number" placeholder="Enter retained customers" min="0">
+            </div>
+        </div>
+
+        <button onclick="calculateMetrics()">Calculate Metrics</button>
+
+        <div class="results" id="results">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Current DSAT Rate</div>
+                    <div class="metric-value" id="current-dsat">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Surveys Needed for DSAT < 5%</div>
+                    <div class="metric-value" id="surveys-needed-dsat">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Current Retention Rate</div>
+                    <div class="metric-value" id="current-retention">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Surveys Needed for Retention Target</div>
+                    <div class="metric-value" id="surveys-needed-retention">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Total Future Surveys to Match Target</div>
+                    <div class="metric-value" id="total-future-surveys">0</div>
+                </div>
+            </div>
+
+            <div id="insights" class="fade-in">
+                <h2>Insights</h2>
+                <p id="insight-message">Provide valid data to get insights.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateMetrics() {
+            const dsatTarget = parseFloat(document.getElementById('dsat-target').value);
+            const retentionTarget = parseFloat(document.getElementById('retention-target').value);
+            const currentSurveys = parseInt(document.getElementById('current-surveys').value);
+            const dissatisfiedCustomers = parseInt(document.getElementById('dissatisfied-customers').value);
+            const retainedCustomers = parseInt(document.getElementById('retained-customers').value);
+
+            if (
+                isNaN(dsatTarget) || isNaN(retentionTarget) ||
+                isNaN(currentSurveys) || isNaN(dissatisfiedCustomers) || isNaN(retainedCustomers) ||
+                dsatTarget < 0 || dsatTarget > 100 || retentionTarget < 0 || retentionTarget > 100 ||
+                dissatisfiedCustomers > currentSurveys || retainedCustomers > currentSurveys || currentSurveys === 0
+            ) {
+                alert("Please provide valid inputs.");
+                return;
+            }
+
+            // DSAT Calculation
+            const currentDSAT = ((dissatisfiedCustomers / currentSurveys) * 100).toFixed(1);
+            let additionalSurveysDSAT = 0;
+
+            if (currentDSAT > dsatTarget) {
+                additionalSurveysDSAT = Math.ceil(
+                    (dissatisfiedCustomers * 100) / dsatTarget - currentSurveys
+                );
+            }
+
+            // Retention Calculation
+            const currentRetention = ((retainedCustomers / currentSurveys) * 100).toFixed(1);
+            let additionalSurveysRetention = 0;
+            let futureTotalSurveys = currentSurveys;
+
+            if (currentRetention < retentionTarget) {
+                futureTotalSurveys = Math.ceil(
+                    (retentionTarget * currentSurveys - retainedCustomers * 100) /
+                    (100 - retentionTarget)
+                ) + currentSurveys;
+
+                additionalSurveysRetention = futureTotalSurveys - currentSurveys;
+            }
+
+            // Update Metrics
+            document.getElementById('current-dsat').innerText = currentDSAT + '%';
+            document.getElementById('surveys-needed-dsat').innerText = additionalSurveysDSAT;
+            document.getElementById('current-retention').innerText = currentRetention + '%';
+            document.getElementById('surveys-needed-retention').innerText = additionalSurveysRetention;
+            document.getElementById('total-future-surveys').innerText = futureTotalSurveys;
+
+            // Generate Insights
+            const insightMessage = document.getElementById('insight-message');
+            if (currentDSAT < 5 && currentRetention >= retentionTarget) {
+                insightMessage.innerText = "All metrics are within target. Customer satisfaction and retention are healthy!";
+            } else if (currentDSAT >= 5 && currentRetention < retentionTarget) {
+                insightMessage.innerText = "High DSAT and low retention indicate dissatisfaction. Focus on improving service quality.";
+            } else if (currentDSAT < 5 && currentRetention < retentionTarget) {
+                insightMessage.innerText = "DSAT is within target, but retention is low. Consider loyalty programs to boost retention.";
+            } else {
+                insightMessage.innerText = "DSAT and retention metrics need improvement. Analyze underlying issues.";
+            }
+
+            // Show Results
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
